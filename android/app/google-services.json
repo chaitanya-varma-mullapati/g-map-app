@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "967952924825",
+    "project_id": "g-map-app-57dc4",
+    "storage_bucket": "g-map-app-57dc4.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:967952924825:android:6f88c7342fcda96cbfb808",
+        "android_client_info": {
+          "package_name": "com.reactnativegooglemap"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "967952924825-upoqjm850tc8nuf2qfghlmnor0q6jmb2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAQSVsSnlRf5EUgwADr6N_byDr8XVq7dlU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "967952924825-upoqjm850tc8nuf2qfghlmnor0q6jmb2.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
