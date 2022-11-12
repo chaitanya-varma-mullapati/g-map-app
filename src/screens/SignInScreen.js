@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext, useState } from 'react';
 import {
     View,
     Text,
@@ -11,105 +11,100 @@ import {
 } from 'react-native';
 import * as Animatable from 'react-native-animatable';
 import LinearGradient from 'react-native-linear-gradient';
-import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import Feather from 'react-native-vector-icons/Feather';
-
 import { useTheme } from 'react-native-paper';
-
+import auth from '@react-native-firebase/auth';
 import { AuthContext } from '../components/context';
-
-// import Users from '../model/users';
+import Activity from '../components/Activity';
 
 const SignInScreen = ({ navigation }) => {
-
-    const [data, setData] = React.useState({
+    const [data, setData] = useState({
         username: '',
         password: '',
-        check_textInputChange: false,
         secureTextEntry: true,
-        isValidUser: true,
-        isValidPassword: true,
     });
-
+    const [clicked, setIsClicked] = useState(false)
     const { colors } = useTheme();
 
-    const { signIn } = React.useContext(AuthContext);
+    const { signIn } = useContext(AuthContext);
 
     const textInputChange = (val) => {
-        if (val.trim().length >= 4) {
-            setData({
-                ...data,
-                username: val,
-                check_textInputChange: true,
-                isValidUser: true
-            });
-        } else {
-            setData({
-                ...data,
-                username: val,
-                check_textInputChange: false,
-                isValidUser: false
-            });
-        }
-    }
-
-    const handlePasswordChange = (val) => {
-        if (val.trim().length >= 8) {
-            setData({
-                ...data,
-                password: val,
-                isValidPassword: true
-            });
-        } else {
-            setData({
-                ...data,
-                password: val,
-                isValidPassword: false
-            });
-        }
-    }
-
-    const updateSecureTextEntry = () => {
         setData({
             ...data,
-            secureTextEntry: !data.secureTextEntry
+            username: val,
         });
     }
 
-    const handleValidUser = (val) => {
-        if (val.trim().length >= 4) {
-            setData({
-                ...data,
-                isValidUser: true
-            });
-        } else {
-            setData({
-                ...data,
-                isValidUser: false
-            });
-        }
+    const handlePasswordChange = (val) => {
+        setData({
+            ...data,
+            password: val,
+            isValidPassword: true
+        });
     }
 
-    const loginHandle = (userName, password) => {
 
-        // const foundUser = Users.filter( item => {
-        //     return userName == item.username && password == item.password;
-        // } );
-
-        if (data.username.length == 0 || data.password.length == 0) {
+    const loginHandle = (email, password) => {
+        const validEmailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/
+        if (!email.length && !password.length) {
             Alert.alert('Wrong Input!', 'Username or password field cannot be empty.', [
                 { text: 'Okay' }
             ]);
             return;
         }
-
-        if (foundUser.length == 0) {
-            Alert.alert('Invalid User!', 'Username or password is incorrect.', [
-                { text: 'Okay' }
+        if (email.length && password.length) {
+            if (validEmailRegex.test(email)) {
+                setIsClicked(true)
+                auth()
+                    .signInWithEmailAndPassword(email, password)
+                    .then((u) => {
+                        signIn(u.user.email, u.user.uid)
+                        setIsClicked(false)
+                    })
+                    .catch(error => {
+                        setIsClicked(false)
+                        if (error.code === 'auth/invalid-email') {
+                            Alert.alert('Email', 'Your email address is invalid!', [
+                                { text: 'Ok' }
+                            ]);
+                        } else {
+                            if (error.code === 'auth/wrong-password') {
+                                Alert.alert('Password!', 'Your password is wrong! please enter correct password.', [
+                                    { text: 'Ok' }
+                                ]);
+                            } else {
+                                if (error.code === 'auth/user-not-found') {
+                                    Alert.alert('Invalid user!', "user doesn't exist.", [
+                                        { text: 'Ok' }
+                                    ]);
+                                } else {
+                                    Alert.alert('Error!', 'Oops! something went wrong, please try again!', [
+                                        { text: 'Ok' }
+                                    ]);
+                                }
+                            }
+                        }
+                        console.log(error)
+                    });
+                return
+            } else {
+                Alert.alert('Email', 'Please Enter Valid email', [
+                    { text: 'Ok' }
+                ]);
+                return;
+            }
+        }
+        if (!email.length) {
+            Alert.alert('Email', 'Please Enter email', [
+                { text: 'Ok' }
             ]);
             return;
         }
-        signIn(foundUser);
+        if (!password.length) {
+            Alert.alert('Password', 'Please Enter password', [
+                { text: 'Ok' }
+            ]);
+            return;
+        }
     }
 
     return (
@@ -126,17 +121,17 @@ const SignInScreen = ({ navigation }) => {
             >
                 <Text style={[styles.text_footer, {
                     color: colors.text
-                }]}>Username</Text>
+                }]}>Email</Text>
                 <View style={styles.action}>
                     <TextInput
-                        placeholder="Your Username"
+                        placeholder="Your Email"
                         placeholderTextColor="#666666"
                         style={[styles.textInput, {
                             color: colors.text
                         }]}
                         autoCapitalize="none"
                         onChangeText={(val) => textInputChange(val)}
-                        onEndEditing={(e) => handleValidUser(e.nativeEvent.text)}
+                    // onEndEditing={(e) => handleValidUser(e.nativeEvent.text)}
                     />
                 </View>
                 <Text style={[styles.text_footer, {
@@ -161,7 +156,10 @@ const SignInScreen = ({ navigation }) => {
                 <View style={styles.button}>
                     <TouchableOpacity
                         style={styles.signIn}
-                        onPress={() => { loginHandle(data.username, data.password) }}
+                        onPress={() => {
+                            !clicked ? loginHandle(data.username, data.password) : null
+                        }}
+                        disabled={clicked}
                     >
                         <LinearGradient
                             colors={['#08d4c4', '#01ab9d']}
@@ -169,7 +167,9 @@ const SignInScreen = ({ navigation }) => {
                         >
                             <Text style={[styles.textSign, {
                                 color: '#fff'
-                            }]}>Sign In</Text>
+                            }]}>
+                                {clicked ? <Activity /> : 'Sign In'}
+                            </Text>
                         </LinearGradient>
                     </TouchableOpacity>
                     <TouchableOpacity

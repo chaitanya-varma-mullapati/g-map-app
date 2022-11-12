@@ -6,14 +6,12 @@ import {
   StyleSheet,
   useColorScheme,
 } from 'react-native';
-
 import { View, ActivityIndicator } from 'react-native';
 import {
   NavigationContainer,
   DefaultTheme as NavigationDefaultTheme,
   DarkTheme as NavigationDarkTheme
 } from '@react-navigation/native';
-
 import {
   Provider as PaperProvider,
   DefaultTheme as PaperDefaultTheme,
@@ -21,6 +19,7 @@ import {
 } from 'react-native-paper';
 import { AuthContext } from './src/components/context';
 import AsyncStorage from '@react-native-community/async-storage';
+import HomeScreen from './src/screens/HomeScreen'
 import RootStackScreen from './src/screens/RootStackScreen';
 
 
@@ -70,7 +69,7 @@ const App = () => {
       case 'LOGIN':
         return {
           ...prevState,
-          userName: action.id,
+          userName: action.user,
           userToken: action.token,
           isLoading: false,
         };
@@ -84,7 +83,7 @@ const App = () => {
       case 'REGISTER':
         return {
           ...prevState,
-          userName: action.id,
+          userName: action.user,
           userToken: action.token,
           isLoading: false,
         };
@@ -94,23 +93,15 @@ const App = () => {
   const [loginState, dispatch] = useReducer(loginReducer, initialLoginState);
 
   const authContext = React.useMemo(() => ({
-    signIn: async (foundUser) => {
-      // setUserToken('fgkj');
-      // setIsLoading(false);
-      const userToken = String(foundUser[0].userToken);
-      const userName = foundUser[0].username;
-
+    signIn: async (user, token) => {
       try {
-        await AsyncStorage.setItem('userToken', userToken);
+        await AsyncStorage.setItem('userToken', token);
       } catch (e) {
         console.log(e);
       }
-      // console.log('user token: ', userToken);
-      dispatch({ type: 'LOGIN', id: userName, token: userToken });
+      dispatch({ type: 'LOGIN', user: user, token: token });
     },
     signOut: async () => {
-      // setUserToken(null);
-      // setIsLoading(false);
       try {
         await AsyncStorage.removeItem('userToken');
       } catch (e) {
@@ -118,9 +109,13 @@ const App = () => {
       }
       dispatch({ type: 'LOGOUT' });
     },
-    signUp: () => {
-      // setUserToken('fgkj');
-      // setIsLoading(false);
+    signUp: async (user, token) => {
+      try {
+        await AsyncStorage.setItem('userToken', token);
+      } catch (e) {
+        console.log(e);
+      }
+      dispatch({ type: 'REGISTER', user: user, token: token });
     },
     toggleTheme: () => {
       setIsDarkTheme(isDarkTheme => !isDarkTheme);
@@ -129,7 +124,6 @@ const App = () => {
 
   useEffect(() => {
     setTimeout(async () => {
-      // setIsLoading(false);
       let userToken;
       userToken = null;
       try {
@@ -137,11 +131,11 @@ const App = () => {
       } catch (e) {
         console.log(e);
       }
-      // console.log('user token: ', userToken);
       dispatch({ type: 'RETRIEVE_TOKEN', token: userToken });
-    }, 1000);
+    }, 0);
   }, []);
 
+  const { userToken } = loginState || {}
 
   return (
     <PaperProvider theme={theme}>
@@ -150,7 +144,11 @@ const App = () => {
           <StatusBar
             barStyle={isDarkMode ? 'light-content' : 'dark-content'}
           />
-          <RootStackScreen />
+          {userToken ?
+            <HomeScreen />
+            :
+            <RootStackScreen />
+          }
         </NavigationContainer>
       </AuthContext.Provider>
     </PaperProvider>

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext, useState } from 'react';
 import {
     View,
     Text,
@@ -7,35 +7,32 @@ import {
     Platform,
     StyleSheet,
     ScrollView,
-    StatusBar
+    StatusBar,
+    Alert
 } from 'react-native';
 import * as Animatable from 'react-native-animatable';
 import LinearGradient from 'react-native-linear-gradient';
 import { useTheme } from 'react-native-paper';
-
+import auth from '@react-native-firebase/auth';
+import { AuthContext } from '../components/context';
+import Activity from '../components/Activity';
 
 const SignInScreen = ({ navigation }) => {
-
     const { colors } = useTheme();
-
-    const [data, setData] = React.useState({
-        username: '',
+    const { signUp } = useContext(AuthContext)
+    const [data, setData] = useState({
+        email: '',
         password: '',
         secureTextEntry: true,
     });
+    const [clicked, setIsClicked] = useState(false)
+
 
     const textInputChange = (val) => {
-        if (val.length !== 0) {
-            setData({
-                ...data,
-                username: val,
-            });
-        } else {
-            setData({
-                ...data,
-                username: val,
-            });
-        }
+        setData({
+            ...data,
+            email: val,
+        });
     }
 
     const handlePasswordChange = (val) => {
@@ -43,6 +40,66 @@ const SignInScreen = ({ navigation }) => {
             ...data,
             password: val
         });
+    }
+    const handleSignUp = (email, password) => {
+        const validEmailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/
+        if (email.length && password.length) {
+            if (validEmailRegex.test(email)) {
+                setIsClicked(true)
+                auth()
+                    .createUserWithEmailAndPassword(email, password)
+                    .then((u) => {
+                        signUp(u.user.email, u.user.uid)
+                        setIsClicked(false)
+                        console.log('User account created & signed in!');
+                    })
+                    .catch(error => {
+                        setIsClicked(false)
+                        if (error.code === 'auth/email-already-in-use') {
+                            console.log('That email address is already in use!');
+                            Alert.alert('Email ', 'That email address is already in use!', [
+                                { text: 'Ok' }
+                            ]);
+                        }
+                        if (error.code === 'auth/invalid-email') {
+                            Alert.alert('Email', 'Your email address is invalid!', [
+                                { text: 'Ok' }
+                            ]);
+                            console.log('That email address is invalid!');
+                        }
+                        console.error(error);
+                        Alert.alert('Error!', 'Oops! something went wrong, please try again!', [
+                            { text: 'Ok' }
+                        ]);
+                    });
+                return
+            } else {
+                Alert.alert('Email', 'Please Enter valid email', [
+                    { text: 'Ok' }
+                ]);
+                return;
+            }
+        } else {
+            if (!email.length && !password.length) {
+                console.log('errrr')
+                Alert.alert('Email & Password', 'Please Enter email & password', [
+                    { text: 'Ok' }
+                ]);
+                return;
+            }
+            if (!email.length) {
+                Alert.alert('Email', 'Please Enter email', [
+                    { text: 'Ok' }
+                ]);
+                return;
+            }
+            if (!password.length) {
+                Alert.alert('Password', 'Please Enter password', [
+                    { text: 'Ok' }
+                ]);
+                return;
+            }
+        }
     }
 
     return (
@@ -56,10 +113,10 @@ const SignInScreen = ({ navigation }) => {
                 style={styles.footer}
             >
                 <ScrollView>
-                    <Text style={styles.text_footer}>Username</Text>
+                    <Text style={styles.text_footer}>Email</Text>
                     <View style={styles.action}>
                         <TextInput
-                            placeholder="Your Username"
+                            placeholder="Your Email"
                             placeholderTextColor="#666666"
                             style={[styles.textInput, {
                                 color: colors.text
@@ -86,7 +143,10 @@ const SignInScreen = ({ navigation }) => {
                     <View style={styles.button}>
                         <TouchableOpacity
                             style={styles.signIn}
-                            onPress={() => { }}
+                            onPress={() => {
+                                !clicked ? handleSignUp(data.email, data.password) : null
+                            }}
+                            disabled={clicked}
                         >
                             <LinearGradient
                                 colors={['#08d4c4', '#01ab9d']}
@@ -94,7 +154,9 @@ const SignInScreen = ({ navigation }) => {
                             >
                                 <Text style={[styles.textSign, {
                                     color: '#fff'
-                                }]}>Sign Up</Text>
+                                }]}>
+                                    {!clicked ? 'Sign Up' : <Activity />}
+                                </Text>
                             </LinearGradient>
                         </TouchableOpacity>
                         <TouchableOpacity
