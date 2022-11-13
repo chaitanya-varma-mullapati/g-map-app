@@ -32,6 +32,10 @@ const App = () => {
     isLoading: true,
     userName: null,
     userToken: null,
+    positions: {
+      longitude: null,
+      latitude: null
+    }
   };
 
   const CustomDefaultTheme = {
@@ -87,6 +91,14 @@ const App = () => {
           userToken: action.token,
           isLoading: false,
         };
+      case 'SET_POSITIONS':
+        return {
+          ...prevState,
+          positions: {
+            longitude: action.longitude,
+            latitude: action.latitude
+          }
+        }
     }
   };
 
@@ -119,6 +131,9 @@ const App = () => {
     },
     toggleTheme: () => {
       setIsDarkTheme(isDarkTheme => !isDarkTheme);
+    },
+    setPositions: ({ longitude, latitude }) => {
+      dispatch({ type: 'SET_POSITIONS', longitude: longitude, latitude: latitude });
     }
   }), []);
 
@@ -145,7 +160,7 @@ const App = () => {
             barStyle={isDarkMode ? 'light-content' : 'dark-content'}
           />
           {userToken ?
-            <HomeScreen />
+            <HomeScreen {...{ loginState }} />
             :
             <RootStackScreen />
           }
