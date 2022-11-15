@@ -21,6 +21,7 @@ import { AuthContext } from './src/components/context';
 import AsyncStorage from '@react-native-community/async-storage';
 import HomeScreen from './src/screens/HomeScreen'
 import RootStackScreen from './src/screens/RootStackScreen';
+import SplashScreen from 'react-native-splash-screen'
 
 
 const App = () => {
@@ -151,6 +152,10 @@ const App = () => {
   }, []);
 
   const { userToken } = loginState || {}
+
+  useEffect(() => {
+    SplashScreen.hide()
+  }, [])
 
   return (
     <PaperProvider theme={theme}>

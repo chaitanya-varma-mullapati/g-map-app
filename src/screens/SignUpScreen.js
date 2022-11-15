@@ -16,6 +16,7 @@ import { useTheme } from 'react-native-paper';
 import auth from '@react-native-firebase/auth';
 import { AuthContext } from '../components/context';
 import Activity from '../components/Activity';
+import { AboutAndContactText } from './AboutUsScreen';
 
 const SignInScreen = ({ navigation }) => {
     const { colors } = useTheme();
@@ -171,6 +172,7 @@ const SignInScreen = ({ navigation }) => {
                                 color: '#009387'
                             }]}>Sign In</Text>
                         </TouchableOpacity>
+                        <AboutAndContactText {...{ navigation }} />
                     </View>
                 </ScrollView>
             </Animatable.View>
