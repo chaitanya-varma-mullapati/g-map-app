@@ -1,5 +1,6 @@
 import React from 'react'
 import { View, Text, Button, TouchableOpacity } from 'react-native'
+import ContactUsFormScreen from './ContactUsScreen'
 
 const AboutUsScreen = ({ navigation }) => {
     return (
@@ -19,9 +20,10 @@ const AboutUsScreen = ({ navigation }) => {
 export const ContactUsScreen = ({ navigation }) => {
     return (
         <View style={{ padding: 10 }}>
-            <View style={{ width: '25%', marginTop: 10 }}>
+            <View style={{ width: '25%', marginTop: 10, borderRadius: 10 }}>
                 <Button onPress={() => navigation.goBack()} title="Back" />
             </View>
+            <ContactUsFormScreen />
             <View>
                 <Text style={{ height: 200, marginTop: 30 }}>
                     Contact us: mc2varma @gmail.com
